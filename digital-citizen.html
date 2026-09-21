@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="th" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DIGITAL CITIZEN: MOLE BUSTER</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        prompt: ['Prompt', 'sans-serif'],
+                    },
+                    colors: {
+                        cyberDark: '#0a0b1e',
+                        cyberCard: '#121535',
+                        cyberNeon: '#00f0ff',
+                        cyberPurple: '#9d00ff',
+                        cyberGreen: '#00ff66',
+                        cyberPink: '#ff007f',
+                        cyberYellow: '#ffe600'
+                    },
+                    boxShadow: {
+                        neon: '0 0 15px rgba(0, 240, 255, 0.5)',
+                        neonPurple: '0 0 15px rgba(157, 0, 255, 0.5)',
+                        neonGreen: '0 0 15px rgba(0, 255, 102, 0.5)',
+                        neonPink: '0 0 15px rgba(255, 0, 127, 0.5)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: #0a0b1e;
+            color: #ffffff;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+        /* Custom scrollbar for modals */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #121535;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #00f0ff;
+            border-radius: 3px;
+        }
+        .neon-text {
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.7), 0 0 20px rgba(0, 240, 255, 0.5);
+        }
+        .neon-text-purple {
+            text-shadow: 0 0 10px rgba(157, 0, 255, 0.7), 0 0 20px rgba(157, 0, 255, 0.5);
+        }
+        .neon-text-green {
+            text-shadow: 0 0 10px rgba(0, 255, 102, 0.7), 0 0 20px rgba(0, 255, 102, 0.5);
+        }
+        .neon-text-pink {
+            text-shadow: 0 0 10px rgba(255, 0, 127, 0.7), 0 0 20px rgba(255, 0, 127, 0.5);
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-50px) scale(1.2); opacity: 0; }
+        }
+        .float-anim {
+            animation: floatUp 0.8s ease-out forwards;
+        }
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 10px rgba(0, 240, 255, 0.4); }
+            50% { box-shadow: 0 0 25px rgba(0, 240, 255, 0.8); }
+        }
+        .pulse-box {
+            animation: pulseGlow 2s infinite;
+        }
+    </style>
+</head>
+<body class="h-full w-full flex flex-col justify-between items-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-950 via-cyberDark to-black overflow-hidden m-0 p-0">
+
+    <!-- Main App Container -->
+    <div id="app" class="w-full h-full max-w-5xl flex flex-col justify-between p-3 sm:p-4 md:p-6 relative overflow-hidden">
+        
+        <!-- Header bar (visible during gameplay) -->
+        <header id="game-header" class="hidden flex-wrap justify-between items-center bg-cyberCard/80 backdrop-blur-md border border-cyberNeon/40 rounded-2xl p-3 shadow-neon z-20 gap-2">
+            <div class="flex items-center gap-3">
+                <button onclick="openPauseModal()" class="bg-cyberPurple/30 hover:bg-cyberPurple/50 border border-cyberPurple text-cyberNeon px-3 py-1.5 rounded-xl font-bold text-sm transition flex items-center gap-1 shadow-neonPurple">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    พักเกม
+                </button>
+                <div class="flex flex-col">
+                    <span id="hud-level-name" class="text-xs text-cyberNeon font-semibold">LEVEL 1</span>
+                    <span id="hud-mode-name" class="text-xs text-gray-300">โหมดท้าทาย</span>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="flex items-center gap-4 sm:gap-6">
+                <!-- Score -->
+                <div class="flex flex-col items-center">
+                    <span class="text-[10px] text-gray-400 uppercase tracking-wider">คะแนน</span>
+                    <span id="hud-score" class="text-lg sm:text-xl font-extrabold text-cyberGreen neon-text-green">0</span>
+                </div>
+                <!-- Timer -->
+                <div id="hud-timer-container" class="flex flex-col items-center">
+                    <span class="text-[10px] text-gray-400 uppercase tracking-wider">เวลา</span>
+                    <span id="hud-timer" class="text-lg sm:text-xl font-extrabold text-cyberYellow">60</span>
+                </div>
+                <!-- Combo -->
+                <div class="flex flex-col items-center">
+                    <span class="text-[10px] text-gray-400 uppercase tracking-wider">คอมโบ</span>
+                    <span id="hud-combo" class="text-lg sm:text-xl font-extrabold text-cyberPink neon-text-pink">x1</span>
+                </div>
+                <!-- Hearts -->
+                <div class="flex flex-col items-center">
+                    <span class="text-[10px] text-gray-400 uppercase tracking-wider">พลังชีวิต</span>
+                    <div id="hud-hearts" class="flex gap-1 text-red-500 text-lg">
+                        ❤️❤️❤️
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button onclick="toggleSound()" id="sound-toggle-btn" class="bg-cyberDark/60 hover:bg-cyberCard border border-cyberNeon/40 p-2 rounded-xl text-cyberNeon transition">
+                    <svg id="sound-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.900a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- SCREEN 1: WELCOME SCREEN -->
+        <div id="screen-welcome" class="absolute inset-0 flex flex-col items-center justify-center p-4 sm:p-6 z-10 overflow-y-auto bg-gradient-to-b from-cyberDark via-[#0d1030] to-cyberDark">
+            <div class="absolute top-4 right-4 flex gap-2">
+                <button onclick="toggleSound()" class="bg-cyberCard border border-cyberNeon/50 p-2.5 rounded-xl text-cyberNeon shadow-neon hover:bg-cyberDark transition">
+                    <svg id="sound-icon-welcome" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.900a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
+                </button>
+                <button onclick="openInfoModal()" class="bg-cyberCard border border-cyberPurple/50 p-2.5 rounded-xl text-cyberPurple shadow-neonPurple hover:bg-cyberDark transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </button>
+            </div>
+
+            <!-- Arcade Cabinet Header Illustration -->
+            <div class="mb-4 text-center animate-bounce">
+                <div class="inline-block p-4 rounded-3xl bg-gradient-to-tr from-cyberPurple via-indigo-600 to-cyberNeon shadow-neon border-2 border-cyberNeon">
+                    <svg class="w-16 h-16 sm:w-20 sm:h-20 text-white" viewBox="0 0 100 100" fill="none">
+                        <circle cx="50" cy="50" r="45" fill="#121535" stroke="#00f0ff" stroke-width="4"/>
+                        <!-- Cute mole face in SVG -->
+                        <ellipse cx="50" cy="58" rx="22" ry="18" fill="#a56a44"/>
+                        <circle cx="42" cy="52" r="3" fill="#000"/>
+                        <circle cx="58" cy="52" r="3" fill="#000"/>
+                        <ellipse cx="50" cy="59" rx="5" ry="3" fill="#3a2518"/>
+                        <!-- Cyber glasses -->
+                        <path d="M35 46 L50 49 L65 46 L63 55 L50 58 L37 55 Z" fill="#00f0ff" fill-opacity="0.7" stroke="#ffffff" stroke-width="2"/>
+                    </svg>
+                </div>
+            </div>
+
+            <h1 class="text-3xl sm:text-5xl font-extrabold text-center tracking-wider text-cyberNeon neon-text mb-2">
+                DIGITAL CITIZEN
+            </h1>
+            <h2 class="text-xl sm:text-2xl font-bold text-center text-cyberPurple neon-text-purple mb-6 uppercase tracking-widest">
+                MOLE BUSTER
+            </h2>
+
+            <p class="text-sm sm:text-base text-gray-300 text-center max-w-md mb-8 leading-relaxed">
+                เกมการศึกษาแนวอาร์เคดสุดล้ำ วิเคราะห์พฤติกรรมดิจิทัล ตีตุ่นพฤติกรรมเสี่ยง <span class="text-cyberPink font-semibold">BAD MOLE</span> และปกป้อง <span class="text-cyberGreen font-semibold">GOOD MOLE</span> ให้ปลอดภัย!
+            </p>
+
+            <!-- Mode Selection Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-md mb-8">
+                <button onclick="selectGameMode('challenge')" class="group p-4 rounded-2xl bg-cyberCard border-2 border-cyberNeon hover:border-cyberGreen shadow-neon transition transform hover:-translate-y-1 text-left flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-lg font-bold text-cyberNeon group-hover:text-cyberGreen transition">โหมดท้าทาย</span>
+                            <span class="bg-cyberNeon/20 text-cyberNeon text-xs px-2 py-0.5 rounded-full font-semibold">จับเวลา</span>
+                        </div>
+                        <p class="text-xs text-gray-400">ทดสอบความไวและทักษะการตัดสินใจในเวลาจำกัด มีระบบพลังชีวิตและคอมโบ</p>
+                    </div>
+                    <div class="mt-4 flex items-center text-cyberGreen text-xs font-semibold gap-1">
+                        <span>เริ่มลุยเลย</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </div>
+                </button>
+
+                <button onclick="selectGameMode('practice')" class="group p-4 rounded-2xl bg-cyberCard border-2 border-cyberPurple hover:border-cyberNeon shadow-neonPurple transition transform hover:-translate-y-1 text-left flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-lg font-bold text-cyberPurple group-hover:text-cyberNeon transition">โหมดฝึกฝน</span>
+                            <span class="bg-cyberPurple/20 text-cyberPurple text-xs px-2 py-0.5 rounded-full font-semibold">ไม่จับเวลา</span>
+                        </div>
+                        <p class="text-xs text-gray-400">เรียนรู้สถานการณ์อย่างเพลิดเพลิน ไม่มีเวลาจำกัด เน้นทำความเข้าใจคำอธิบาย</p>
+                    </div>
+                    <div class="mt-4 flex items-center text-cyberNeon text-xs font-semibold gap-1">
+                        <span>ฝึกฝนสถานการณ์</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Quick Action Buttons -->
+            <div class="flex flex-wrap justify-center gap-3">
+                <button onclick="openHowToPlay()" class="bg-cyberDark/80 border border-cyberNeon/50 text-cyberNeon px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-cyberCard transition shadow-neon">
+                    📖 วิธีการเล่น
+                </button>
+                <button onclick="openBadgeModal()" class="bg-cyberDark/80 border border-cyberYellow/50 text-cyberYellow px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-cyberCard transition shadow-neon">
+                    🏆 เหรียญรางวัล
+                </button>
+            </div>
+        </div>
+
+        <!-- SCREEN 2: LEVEL SELECTION SCREEN -->
+        <div id="screen-levels" class="hidden absolute inset-0 flex flex-col items-center justify-between p-4 sm:p-6 z-10 overflow-y-auto bg-gradient-to-b from-cyberDark via-[#0d1030] to-cyberDark">
+            <div class="w-full max-w-3xl flex justify-between items-center mb-4">
+                <button onclick="showScreen('welcome')" class="bg-cyberCard border border-cyberNeon/40 text-cyberNeon px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-cyberDark transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    กลับหน้าแรก
+                </button>
+                <h2 class="text-xl sm:text-2xl font-bold text-cyberNeon neon-text">เลือกด่านการเรียนรู้</h2>
+                <div class="w-20"></div> <!-- Spacer -->
+            </div>
+
+            <div class="w-full max-w-3xl grid grid-cols-1 md:grid-cols-2 gap-4 my-auto py-2" id="level-list-container">
+                <!-- Levels populated dynamically -->
+            </div>
+
+            <div class="w-full max-w-3xl flex justify-center mt-4">
+                <p class="text-xs text-gray-400 text-center">ผ่านด่านก่อนหน้าด้วยความแม่นยำ ≥ 80% เพื่อปลดล็อกด่านถัดไป</p>
+            </div>
+        </div>
+
+        <!-- SCREEN 3: GAMEPLAY SCREEN -->
+        <div id="screen-game" class="hidden flex-1 flex flex-col items-center justify-center relative w-full h-full my-auto">
+            <!-- 3x3 Whack-a-Mole Arena -->
+            <div class="w-full max-w-lg aspect-square bg-cyberCard/70 backdrop-blur-md border-2 border-cyberNeon/50 rounded-3xl p-4 sm:p-6 shadow-neon grid grid-cols-3 grid-rows-3 gap-3 sm:gap-4 relative my-auto">
+                <!-- 9 Holes will be rendered here via JS -->
+            </div>
+            
+            <!-- Bottom Quick Control for Mobile -->
+            <div class="mt-3 flex justify-center gap-4 w-full">
+                <button onclick="pauseGame()" class="bg-cyberCard border border-cyberPurple text-cyberPurple px-4 py-1.5 rounded-xl text-xs font-bold shadow-neonPurple">
+                    ⏸️ หยุดชั่วคราว
+                </button>
+                <button onclick="quitGame()" class="bg-cyberCard border border-red-500 text-red-400 px-4 py-1.5 rounded-xl text-xs font-bold">
+                    ❌ ออกจากเกม
+                </button>
+            </div>
+        </div>
+
+        <!-- SCREEN 4: LEVEL COMPLETE / RESULT SCREEN -->
+        <div id="screen-result" class="hidden absolute inset-0 flex flex-col items-center justify-center p-4 sm:p-6 z-35 overflow-y-auto bg-cyberDark/95 backdrop-blur-lg">
+            <div class="w-full max-w-md bg-cyberCard border-2 border-cyberNeon rounded-3xl p-6 shadow-neon flex flex-col items-center text-center">
+                <div id="result-badge-icon" class="w-16 h-16 rounded-full bg-cyberGreen/20 border-2 border-cyberGreen flex items-center justify-center text-3xl mb-3 shadow-neonGreen">
+                    🎉
+                </div>
+                <h2 id="result-title" class="text-2xl font-extrabold text-cyberNeon neon-text mb-1">ผ่านภารกิจสำเร็จ!</h2>
+                <p id="result-subtitle" class="text-xs text-gray-300 mb-6">คุณได้แสดงพลังพลเมืองดิจิทัลที่ยอดเยี่ยม</p>
+
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-3 gap-3 w-full mb-6">
+                    <div class="bg-cyberDark/80 border border-cyberNeon/30 p-3 rounded-2xl flex flex-col items-center">
+                        <span class="text-[10px] text-gray-400">คะแนนรวม</span>
+                        <span id="res-score" class="text-xl font-bold text-cyberGreen">0</span>
+                    </div>
+                    <div class="bg-cyberDark/80 border border-cyberNeon/30 p-3 rounded-2xl flex flex-col items-center">
+                        <span class="text-[10px] text-gray-400">ความแม่นยำ</span>
+                        <span id="res-accuracy" class="text-xl font-bold text-cyberYellow">0%</span>
+                    </div>
+                    <div class="bg-cyberDark/80 border border-cyberNeon/30 p-3 rounded-2xl flex flex-col items-center">
+                        <span class="text-[10px] text-gray-400">ตอบถูก/ผิด</span>
+                        <span id="res-correct-count" class="text-base font-bold text-cyberNeon">0/0</span>
+                    </div>
+                </div>
+
+                <!-- Review Section for Mistakes -->
+                <div id="mistake-review-container" class="w-full max-h-40 overflow-y-auto mb-6 bg-cyberDark/60 rounded-xl p-3 text-left hidden border border-cyberPink/40">
+                    <h4 class="text-xs font-bold text-cyberPink mb-2">📌 รายการข้อที่ควรทบทวน:</h4>
+                    <div id="mistake-list" class="space-y-2 text-xs text-gray-300">
+                        <!-- Mistakes populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row gap-3 w-full">
+                    <button id="btn-next-level" onclick="proceedNextLevel()" class="flex-1 bg-gradient-to-r from-cyberGreen to-teal-500 hover:from-teal-400 hover:to-cyberGreen text-cyberDark font-bold py-3 px-4 rounded-xl shadow-neonGreen transition text-sm">
+                        ด่านถัดไป 🚀
+                    </button>
+                    <button onclick="restartLevel()" class="flex-1 bg-cyberPurple hover:bg-purple-600 text-white font-bold py-3 px-4 rounded-xl shadow-neonPurple transition text-sm">
+                        เล่นอีกครั้ง 🔄
+                    </button>
+                    <button onclick="showScreen('levels')" class="bg-cyberDark border border-cyberNeon/50 text-cyberNeon font-bold py-3 px-4 rounded-xl hover:bg-cyberCard transition text-sm">
+                        เลือกด่าน 📋
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: HOW TO PLAY -->
+        <div id="modal-howto" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <div class="w-full max-w-lg bg-cyberCard border-2 border-cyberNeon rounded-3xl p-6 shadow-neon flex flex-col max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-cyberNeon neon-text">📖 วิธีการเล่น Digital Citizen Mole Buster</h3>
+                    <button onclick="closeModal('modal-howto')" class="text-gray-400 hover:text-white text-xl font-bold">&times;</button>
+                </div>
+                <div class="space-y-3 text-sm text-gray-300 leading-relaxed">
+                    <p>🎯 <strong class="text-cyberGreen">เป้าหมาย:</strong> วิเคราะห์ป้ายสถานการณ์บนตัวตุ่น แล้วตัดสินใจตีให้ถูกต้องตามหลักพลเมืองดิจิทัล</p>
+                    <div class="bg-cyberDark/60 p-3 rounded-xl border border-cyberPink/40">
+                        <h4 class="text-cyberPink font-bold mb-1">🥊 ตัวตุ่น 2 ประเภท:</h4>
+                        <ul class="list-disc pl-5 space-y-1 text-xs">
+                            <li><strong class="text-cyberPink">BAD MOLE:</strong> พฤติกรรมเสี่ยง ไม่เหมาะสม ละเมิดสิทธิ หรือข่าวปลอม ➔ <span class="underline">ต้องตี! (+100 คะแนน)</span></li>
+                            <li><strong class="text-cyberGreen">GOOD MOLE:</strong> พฤติกรรมเหมาะสม ปลอดภัย สร้างสรรค์ ➔ <span class="underline">ห้ามตี!ปล่อยไว้ (ตีผิด -50 คะแนน และเสียหัวใจ)</span></li>
+                        </ul>
+                    </div>
+                    <p>⚡ <strong class="text-cyberYellow">ระบบคอมโบ:</strong> เมื่อตอบถูกต่อเนื่อง 3 ครั้งขึ้นไป จะได้รับคะแนนโบนัสคอมโบพิเศษเพิ่ม +100 คะแนน!</p>
+                    <p>❤️ <strong class="text-red-400">หัวใจเริ่มต้น:</strong> มี 3 ดวง หากตีตัว Good Mole หรือปล่อย Bad Mole หลุดไป (ในโหมดท้าทาย) จะเสียหัวใจ</p>
+                    <p>🏆 <strong class="text-cyberPurple">เงื่อนไขผ่านด่าน:</strong> ทำความสะอาดภารกิจด้วยความแม่นยำไม่น้อยกว่า 80% เพื่อปลดล็อกด่านถัดไปและสะสมเหรียญรางวัลครบทั้ง 5 ด่าน!</p>
+                </div>
+                <button onclick="closeModal('modal-howto')" class="mt-6 w-full bg-cyberNeon text-cyberDark font-bold py-3 rounded-xl shadow-neon hover:bg-cyan-300 transition">
+                    เข้าใจแล้ว, เริ่มลุยเลย!
+                </button>
+            </div>
+        </div>
+
+        <!-- MODAL: PAUSE -->
+        <div id="modal-pause" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <div class="w-full max-w-sm bg-cyberCard border-2 border-cyberPurple rounded-3xl p-6 shadow-neonPurple flex flex-col items-center text-center">
+                <h3 class="text-xl font-bold text-cyberPurple neon-text-purple mb-4">⏸️ เกมหยุดชั่วคราว</h3>
+                <div class="space-y-3 w-full">
+                    <button onclick="resumeGame()" class="w-full bg-cyberNeon text-cyberDark font-bold py-3 rounded-xl shadow-neon hover:bg-cyan-300 transition text-sm">
+                        ▶️ เล่นต่อ
+                    </button>
+                    <button onclick="restartLevel()" class="w-full bg-cyberPurple text-white font-bold py-3 rounded-xl shadow-neonPurple hover:bg-purple-600 transition text-sm">
+                        🔄 เริ่มด่านนี้ใหม่
+                    </button>
+                    <button onclick="quitGame()" class="w-full bg-cyberDark border border-red-500 text-red-400 font-bold py-3 rounded-xl hover:bg-red-950/30 transition text-sm">
+                        ❌ ออกสู่หน้าเลือกด่าน
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: BADGES & ACHIEVEMENTS -->
+        <div id="modal-badge" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <div class="w-full max-w-md bg-cyberCard border-2 border-cyberYellow rounded-3xl p-6 shadow-neon flex flex-col max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-cyberYellow neon-text">🏆 ทำเนียบเหรียญรางวัลพลเมืองดิจิทัล</h3>
+                    <button onclick="closeModal('modal-badge')" class="text-gray-400 hover:text-white text-xl font-bold">&times;</button>
+                </div>
+                <div id="badge-container" class="space-y-3">
+                    <!-- Badges populated dynamically -->
+                </div>
+                <button onclick="closeModal('modal-badge')" class="mt-6 w-full bg-cyberYellow text-cyberDark font-bold py-3 rounded-xl shadow-neon hover:bg-yellow-300 transition">
+                    ปิดหน้าต่าง
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- WEB AUDIO API SYNTHESIZER ---
+        class SoundEngine {
+            constructor() {
+                this.enabled = true;
+                this.ctx = null;
+            }
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+            playHitCorrect() {
+                if (!this.enabled) return;
+                this.init();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(440, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.15);
+            }
+            playHitWrong() {
+                if (!this.enabled) return;
+                this.init();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(200, this.ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(100, this.ctx.currentTime + 0.25);
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.25);
+            }
+            playCombo() {
+                if (!this.enabled) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, now + i * 0.08);
+                    gain.gain.setValueAtTime(0.2, now + i * 0.08);
+                    gain.gain.linearRampToValueAtTime(0.01, now + i * 0.08 + 0.12);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now + i * 0.08);
+                    osc.stop(now + i * 0.08 + 0.12);
+                });
+            }
+            playWin() {
+                if (!this.enabled) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                [392, 523, 659, 784, 1046].forEach((freq, i) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now + i * 0.12);
+                    gain.gain.setValueAtTime(0.25, now + i * 0.12);
+                    gain.gain.linearRampToValueAtTime(0.01, now + i * 0.12 + 0.2);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now + i * 0.12);
+                    osc.stop(now + i * 0.12 + 0.2);
+                });
+            }
+            playGameOver() {
+                if (!this.enabled) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                [300, 250, 200, 150].forEach((freq, i) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(freq, now + i * 0.15);
+                    gain.gain.setValueAtTime(0.3, now + i * 0.15);
+                    gain.gain.linearRampToValueAtTime(0.01, now + i * 0.15 + 0.2);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now + i * 0.15);
+                    osc.stop(now + i * 0.15 + 0.2);
+                });
+            }
+        }
+
+        const soundEngine = new SoundEngine();
+
+        // --- QUESTION BANK DATA (100+ Scenarios across 5 Levels) ---
+        const levelData = [
+            {
+                id: 1,
+                name: "Level 1: Privacy Defender",
+                title: "ข้อมูลส่วนบุคคล รหัสผ่าน และความเป็นส่วนตัว",
+                badge: "🛡️ ผู้พิทักษ์ความเป็นส่วนตัว",
+                desc: "ปกป้องข้อมูลส่วนตัว ตั้งรหัสผ่านที่ปลอดภัย และรู้เท่าทันการแชร์ข้อมูล",
+                questions: [
+                    { text: "โพสต์เลขบัตรประชาชนลงโซเชียล", type: "bad", desc: "อันตรายมาก! เลขบัตรประชาชนนำไปแอบอ้างทำธุรกรรมผิดกฎหมายได้" },
+                    { text: "ตั้งรหัสผ่านด้วยวันเกิดง่ายๆ", type: "bad", desc: "เดาง่ายเกินไป ควรใช้ตัวอักษรพิมพ์ใหญ่-เล็ก ตัวเลข และสัญลักษณ์ผสมกัน" },
+                    { text: "เปิดใช้งาน 2FA (Two-Factor Authentication)", type: "good", desc: "ยอดเยี่ยม! ช่วยเพิ่มความปลอดภัยอีกชั้นแม้รหัสผ่านรั่วไหล" },
+                    { text: "ล็อกอินบัญชีค้างไว้ที่คอมพิวเตอร์สาธารณะ", type: "bad", desc: "เสี่ยงถูกผู้อื่นเข้าถึงข้อมูลส่วนตัวและแอบอ้างใช้งาน" },
+                    { text: "ไม่อ่านนโยบายความเป็นส่วนตัวก่อนกด ยอมรับ", type: "bad", desc: "ควรตรวจสอบสิทธิ์การเข้าถึงข้อมูลของแอปพลิเคชันเสมอก่อนให้สิทธิ์" },
+                    { text: "ตั้งค่าบัญชีโซเชียลเป็นส่วนตัว (Private)", type: "good", desc: "ถูกต้อง ช่วยจำกัดการมองเห็นข้อมูลจากคนแปลกหน้า" },
+                    { text: "ให้รหัสผ่านเกมกับเพื่อนสนิท", type: "bad", desc: "ไม่ควรบอกรหัสผ่านแก่ผู้อื่น แม้จะเป็นเพื่อนสนิทก็ตาม" },
+                    { text: "ตรวจเช็ก HTTPS และไอคอนแม่กุญแจก่อนกรอกข้อมูล", type: "good", desc: "เยี่ยมมาก ช่วยป้องกันเว็บปลอมหรือ Phishing เบื้องต้น" },
+                    { text: "ใช้รหัสผ่านเดียวกันทุกเว็บไซต์", type: "bad", desc: "หากเว็บใดเว็บหนึ่งถูกเจาะ แฮกเกอร์จะเข้าได้ทุกบัญชีของคุณ" },
+                    { text: "ออกจากระบบ (Log out) ทุกครั้งหลังใช้งานเครื่องสาธารณะ", type: "good", desc: "ถูกต้อง ป้องกันผู้อื่นแอบสวมรอยใช้งานต่อ" },
+                    { text: "แชร์พิกัดบ้านแบบ Real-time สาธารณะ", type: "bad", desc: "เสี่ยงต่อความปลอดภัยในชีวิตและทรัพย์สิน" },
+                    { text: "ลบประวัติการท่องเว็บและคุกกี้บนคอมสาธารณะ", type: "good", desc: "ช่วยลบร่องรอยและข้อมูลส่วนตัวไม่ให้ค้างในเครื่อง" },
+                    { text: "คลิกรับรางวัลฟรีโดยกรอกข้อมูลบัตรเครดิต", type: "bad", desc: "กลลวงขโมยข้อมูลทางการเงิน มิจฉาชีพแน่นอน" },
+                    { text: "ตรวจสอบสิทธิ์การเข้าถึงรูปภาพของแอปแปลกๆ", type: "good", desc: "เยี่ยมมาก ป้องกันแอปแอบดึงข้อมูลส่วนตัว" },
+                    { text: "ใช้เบอร์โทรจริงสมัครเว็มนอกกระแสทุกเว็บ", type: "bad", desc: "เสี่ยงได้รับ SMS ขยะหรือข้อมูลรั่วไหล" },
+                    { text: "อัปเดตระบบปฏิบัติการและแอปอยู่เสมอ", type: "good", desc: "ช่วยอุดช่องโหว่ความปลอดภัยใหม่ๆ" },
+                    { text: "ถ่ายรูปพาสปอร์ตลงสตอรี่ไอจีอวดเพื่อน", type: "bad", desc: "ข้อมูลหนังสือเดินทางมีความสำคัญสูง ห้ามเผยแพร่เด็ดขาด" },
+                    { text: "ปฏิเสธการอนุญาตให้แอปเปิดไมโครโฟนโดยไม่จำเป็น", type: "good", desc: "ปกป้องความเป็นส่วนตัวจากการดักฟัง" },
+                    { text: "บันทึกรหัสผ่านธนาคารไว้ในโน้ตมือถือแบบไม่ล็อก", type: "bad", desc: "อันตรายหากมือถือหายหรือถูกแฮก" },
+                    { text: "สำรองข้อมูลสำคัญเข้ารหัสไว้ใน Cloud ส่วนตัวที่ปลอดภัย", type: "good", desc: "ยอดเยี่ยม ป้องกันข้อมูลสูญหายและปลอดภัย" }
+                ]
+            },
+            {
+                id: 2,
+                name: "Level 2: Fake News Hunter",
+                title: "ข่าวปลอม การตรวจสอบข้อมูล และการแชร์ข่าว",
+                badge: "🕵️ นักล่าข่าวปลอม",
+                desc: "แยกแยะข่าวจริงข่าวปลอม ตรวจสอบแหล่งที่มาก่อนแชร์ต่อ",
+                questions: [
+                    { text: "แชร์ข่าวพาดหัวรุนแรงทันทีโดยยังไม่อ่านเนื้อหา", type: "bad", desc: "พฤติกรรมเสี่ยงกระจายข่าวปลอมและสร้างความตื่นตระหนก" },
+                    { text: "ตรวจสอบแหล่งข่าวจากสำนักข่าวหลักที่น่าเชื่อถือ", type: "good", desc: "ถูกต้องเสมอ ควรเช็กจากหลายแหล่งก่อนเชื่อ" },
+                    { text: "เชื่อข้อมูลจากภาพตัดต่อเพราะยอดไลก์เยอะ", type: "bad", desc: "ยอดไลก์ไม่ได้การันตีความจริง ต้องตรวจสอบที่มาของภาพ" },
+                    { text: "ใช้เว็บไซต์ตรวจสอบข้อเท็จจริง (Fact-checking)", type: "good", desc: "ยอดเยี่ยม เป็นเครื่องมือยืนยันความถูกต้องของข่าว" },
+                    { text: "ส่งต่อข้อมูลสุขภาพสมุนไพรทิพย์รักษาโรคร้าย", type: "bad", desc: "อาจสร้างอันตรายถึงชีวิตหากผู้อื่นนำไปปฏิบัติตามจริง" },
+                    { text: "สังเกตวันที่และปีของข่าวเก่าที่ถูกนำมาแชร์ซ้ำ", type: "good", desc: "เยี่ยมมาก ข่าวเก่าอาจไม่ตรงกับสถานการณ์ปัจจุบัน" },
+                    { text: "เชื่อว่าภาพเหตุการณ์ต่างประเทศคือเหตุการณ์ในไทย", type: "bad", desc: "มักเกิดการบิดเบือนบริบทของข่าว ควรค้นหาภาพย้อนกลับ (Reverse Image Search)" },
+                    { text: "ตรวจสอบชื่อเว็บไซต์และ URL ว่าสะกดถูกต้องหรือไม่", type: "good", desc: "ช่วยป้องกันเว็บไซต์ข่าวปลอมเลียนแบบ (Spoofing)" },
+                    { text: "คอมเมนต์ด่าทอต้นทางในข่าวปลอมด้วยอารมณ์", type: "bad", desc: "เพิ่มการมีส่วนช่วยกระจายการมองเห็นให้ข่าวปลอมนั้นแพร่เร็วขึ้น" },
+                    { text: "แจ้งเตือนเพื่อนว่าข้อมูลที่แชร์เป็นข่าวปลอมด้วยความสุภาพ", type: "good", desc: "เป็นการสร้างภูมิคุ้มกันดิจิทัลให้สังคมร่วมกัน" },
+                    { text: "แชร์ลูกโซ่เตือนภัยที่ไม่มีที่มาอ้างอิงชัดเจน", type: "bad", desc: "มักเป็นข่าวลวงที่สร้างความเข้าใจผิดในวงกว้าง" },
+                    { text: "ค้นหาข้อมูลเพิ่มเติมจากผู้เชี่ยวชาญเฉพาะด้าน", type: "good", desc: "ช่วยให้ได้ข้อเท็จจริงที่รอบด้านและแม่นยำ" },
+                    { text: "เชื่อคำทำนายดวงชะตาร้ายแรงจากเพจโนเนม", type: "bad", desc: "สร้างความกังวลใจโดยไม่มีหลักวิทยาศาสตร์รองรับ" },
+                    { text: "วิเคราะห์เจตนาของผู้เผยแพร่ข่าวว่าต้องการยอดคลิกหรือปั่นกระแส", type: "good", desc: "ยอดเยี่ยม รู้เท่าทันกลยุทธ์ Clickbait" },
+                    { text: "ส่งต่อภาพความเสียหายเก่าเพื่อขอรับบริจาคเงิน", type: "bad", desc: "เข้าข่ายหลอกลวงต้มตุ๋นและอาชญากรรมทางเทคโนโลยี" },
+                    { text: "ช่วยกดรายงาน (Report) ข่าวปลอมบนแพลตฟอร์ม", type: "good", desc: "ช่วยหยุดยั้งการแพร่กระจายของข้อมูลเท็จในระบบ" },
+                    { text: "มั่นใจว่าตัวเองไม่เคยตกเป็นเหยื่อข่าวปลอมเลย", type: "bad", desc: "ทุกคนมีโอกาสพลาด ควรเปิดใจตรวจสอบอยู่เสมอ" },
+                    { text: "เปรียบเทียบรายงานข่าวจากสำนักข่าวหลายสำนัก", type: "good", desc: "วิธีที่ดีที่สุดในการกรองความจริง" },
+                    { text: "เชื่อคำโฆษณาชวนเชื่อเกินจริงของอาหารเสริม", type: "bad", desc: "เสี่ยงอันตรายต่อสุขภาพและสูญเสียเงินทอง" },
+                    { text: "อ่านคอมเมนต์เพื่อดูข้อถกเถียงและหลักฐานประกอบจากผู้อื่น", type: "good", desc: "ช่วยเพิ่มมุมมองรอบด้านในการวิเคราะห์" }
+                ]
+            },
+            {
+                id: 3,
+                name: "Level 3: Cyber Safety",
+                title: "Phishing, OTP และภัยคุกคามออนไลน์",
+                badge: "🛡️ ผู้เชี่ยวชาญความปลอดภัยไซเบอร์",
+                desc: "รู้ทันกลลวง Phishing, ลิงก์ปลอม, และรหัส OTP อันตราย",
+                questions: [
+                    { text: "บอกรหัส OTP 6 หลักให้พนักงานอ้างชื่อธนาคารทางโทรศัพท์", type: "bad", desc: "อันตรายสูงสุด! ธนาคารไม่มีนโยบายขอรหัส OTP จากลูกค้า" },
+                    { text: "คลิกลิงก์ SMS แจ้งรับเงินเยียวยาด่วน", type: "bad", desc: "กลลวง Phishing ขโมยข้อมูลบัญชีธนาคาร" },
+                    { text: "บล็อกและรายงานเบอร์มิจฉาชีพทันที", type: "good", desc: "ถูกต้อง ป้องกันตัวเองและผู้อื่นจากการตกเป็นเหยื่อ" },
+                    { text: "ดาวน์โหลดแอปควบคุมมือถือจากลิงก์ไลน์คนแปลกหน้า", type: "bad", desc: "แอปดูดเงิน! อนุญาตให้โจรควบคุมเครื่องและโอนเงินออกหมดบัญชี" },
+                    { text: "ตรวจสอบ URL เว็บไซต์ธนาคารให้แน่ใจก่อนกรอกข้อมูล", type: "good", desc: "ป้องกันเว็บปลอมที่ทำเลียนแบบหน้าเว็บจริง" },
+                    { text: "สแกน QR Code รับเงินจากคนไม่รู้จักที่ยืนยันตัวตนไม่ได้", type: "bad", desc: "อาจเป็นกลโกงฟิชชิงหรือพาไปยังเว็บอันตราย" },
+                    { text: "อัปเดตแอปพลิเคชันธนาคารผ่าน Store ทางการเท่านั้น", type: "good", desc: "ปลอดภัย ป้องกันแอปปลอมแปลงจากภายนอก" },
+                    { text: "เชื่ออีเมลแจ้งบัญชีถูกระงับและให้กดลิงก์ยืนยันทันที", type: "bad", desc: "อีเมลฟิชชิงยอดฮิต ห้ามคลิกลิงก์เด็ดขาด" },
+                    { text: "โทรสอบถามคอลเซ็นเตอร์ทางการของธนาคารโดยตรงเพื่อตรวจสอบ", type: "good", desc: "วิธีตรวจสอบที่ปลอดภัยที่สุดเมื่อสงสัย" },
+                    { text: "กรอกข้อมูลบัญชีธนาคารลงในเกมแจกเพชรฟรี", type: "bad", desc: "เหยื่อกลลวงขโมยข้อมูลส่วนบุคคลและรหัสผ่าน" },
+                    { text: "ตั้งวงเงินโอนออกรายวันในแอปธนาคารให้เหมาะสม", type: "good", desc: "ช่วยจำกัดความเสียหายหากเกิดเหตุการณ์ไม่คาดฝัน" },
+                    { text: "เปิดแจ้งเตือนการเคลื่อนไหวบัญชี (SMS/App Notification)", type: "good", desc: "รู้ตัวทันทีเมื่อมีความผิดปกติเกิดขึ้นกับบัญชี" },
+                    { text: "ให้บัตรประชาชนและหน้าบัตรเดบิตกับคนอื่นถ่ายรูปเล่น", type: "bad", desc: "ข้อมูลบนบัตรถูกนำไปใช้แอบอ้างทำธุรกรรมได้ง่าย" },
+                    { text: "ใช้ Wi-Fi สาธารณะทำธุรกรรมการเงินโดยไม่ใช้ VPN", type: "bad", desc: "เสี่ยงถูกดักฟังข้อมูลการรับส่ง (Man-in-the-middle attack)" },
+                    { text: "ตรวจสอบสิทธิ์แอปพลิเคชันที่ขอเข้าถึง SMS", type: "good", desc: "ป้องกันแอปแอบอ่านรหัส OTP ของเรา" },
+                    { text: "กดรับของรางวัลพัสดุตีกลับที่ต้องจ่ายเงินปลายทางโดยไม่ได้สั่ง", type: "bad", desc: "กลโกงส่งพัสดุต้มตุ๋นเก็บเงินปลายทาง" },
+                    { text: "ตั้งค่าล็อกหน้าจออุปกรณ์ด้วยชีวมตร (Face ID / ลายนิ้วมือ)", type: "good", desc: "เพิ่มความปลอดภัยเมื่อโทรศัพท์สูญหาย" },
+                    { text: "เชื่อข้อความทาง SMS ที่บอกว่าคุณเป็นผู้โชคดีได้รับรางวัลใหญ่", type: "bad", desc: "ไม่มีของฟรีในโลก เป็นกลลวงหลอกลวงแน่นอน" },
+                    { text: "ปรึกษาผู้ปกครองหรือครูก่อนทำธุรกรรมออนไลน์ที่ไม่แน่ใจ", type: "good", desc: "เยี่ยมมาก การขอคำปรึกษาช่วยลดความเสี่ยงได้ดี" },
+                    { text: "ถ่ายรูปสลิปโอนเงินที่มีข้อมูลส่วนตัวลงโซเชียลแบบไม่เบลอ", type: "bad", desc: "มิจฉาชีพอาจนำข้อมูลบัญชีและชื่อไปแอบอ้างต่อ" }
+                ]
+            },
+            {
+                id: 4,
+                name: "Level 4: Digital Ethics",
+                title: "Cyberbullying, ลิขสิทธิ์ และจริยธรรม AI",
+                badge: "⚖️ ผู้ทรงคุณวุฒิจริยธรรมดิจิทัล",
+                desc: "ตระหนักเรื่อง Cyberbullying, เคารพลิขสิทธิ์ และใช้ AI อย่างมีจริยธรรม",
+                questions: [
+                    { text: "คอมเมนต์บูลลี่รูปร่างหน้าตาเพื่อนสนุกปากในโพสต์สาธารณะ", type: "bad", desc: "เป็นการกลั่นแลงทางไซเบอร์ (Cyberbullying) ที่สร้างแผลใจและผิดกฎหมาย" },
+                    { text: "ให้กำลังใจและปกป้องเพื่อนที่ถูกกลั่นแกล้งออนไลน์ (Upstander)", type: "good", desc: "ยอดเยี่ยม! สร้างสังคมออนไลน์ที่อบอุ่นและปลอดภัย" },
+                    { text: "นำผลงานภาพวาดของผู้อื่นไปแอบอ้างว่าเป็นของตนเอง", type: "bad", desc: "ละเมิดลิขสิทธิ์และทรัพย์สินทางปัญญาของผู้อื่น" },
+                    { text: "ให้เครดิตและขออนุญาตเจ้าของผลงานก่อนนำมาแชร์ต่อ", type: "good", desc: "ถูกต้อง แสดงถึงจริยธรรมและความเคารพสิทธิ์" },
+                    { text: "ใช้ AI สร้างภาพปลอมบุคคลอื่นเพื่อกลั่นแกล้งหรือดิสเครดิต", type: "bad", desc: "อันตรายและผิดจริยธรรม AI อย่างร้ายแรง (Deepfake abuse)" },
+                    { text: "ระบุให้ชัดเจนเมื่อเนื้อหาสร้างขึ้นโดยปัญญาประดิษฐ์ (AI)", type: "good", desc: "โปร่งใสและรับผิดชอบต่อสารสนเทศที่เผยแพร่" },
+                    { text: "แคปแชทส่วนตัวของเพื่อนมาประจานในกลุ่มห้องเรียน", type: "bad", desc: "ละเมิดความเป็นส่วนตัวและทำลายความไว้วางใจ" },
+                    { text: "คิดถึงใจเขาใจเราก่อนพิมพ์ข้อความแสดงความคิดเห็น (Digital Empathy)", type: "good", desc: "หัวใจสำคัญของพลเมืองดิจิทัลที่ดี" },
+                    { text: "ลอกการบ้านหรือบทความทั้งดุ้นจากอินเทอร์เน็ตส่งครูโดยไม่ปรับแก้", type: "bad", desc: "การคัดลอกผลงาน (Plagiarism) ขาดความซื่อสัตย์ทางวิชาการ" },
+                    { text: "เรียบเรียงและอ้างอิงแหล่งที่มาเมื่อนำข้อมูลผู้อื่นมาใช้", type: "good", desc: "ปฏิบัติถูกต้องตามหลักวิชาการและจริยธรรม" },
+                    { text: "สร้างแอคเคานต์ปลอมไปคอมเมนต์เกลียดชังผู้อื่น (Hate Speech)", type: "bad", desc: "สร้างความเกลียดชังและทำลายบรรยากาศสังคมออนไลน์" },
+                    { text: "ช่วยกันกดรายงาน (Report) เนื้อหาการกลั่นแกล้งหรือรุนแรง", type: "good", desc: "ร่วมมือกันสร้างสรรค์พื้นที่ปลอดภัยบนโลกออนไลน์" },
+                    { text: "นำรูปถ่ายเพื่อนตอนหลับมาทำมีมล้อเลียนขำขัน", type: "bad", desc: "เป็นการละเมิดสิทธิส่วนบุคคลโดยไม่ได้รับอนุญาต" },
+                    { text: "เคารพความเห็นที่แตกต่างในการถกเถียงเชิงวิชาการออนไลน์", type: "good", desc: "แสดงวุฒิภาวะและความเป็นพลเมืองดิจิทัล" },
+                    { text: "ใช้คำพูดสุภาพและสร้างสรรค์ในการแสดงความคิดเห็น", type: "good", desc: "ยอดเยี่ยม ช่วยยกระดับคุณภาพสังคมออนไลน์" },
+                    { text: "เผยแพร่คลิปวิดีโออุบัติเหตุรุนแรงโดยไม่เซนเซอร์", type: "bad", desc: "ละเมิดศักดิ์ศรีความเป็นมนุษย์ของผู้ประสบเหตุและญาติ" },
+                    { text: "ตรวจสอบและคัดกรองข้อมูลก่อนนำไปใช้งานผ่าน AI", type: "good", desc: "ป้องกันการเผยแพร่ข้อมูลที่คลาดเคลื่อนจาก AI Hallucination" },
+                    { text: "แอบอ้างเป็นผู้อื่นเพื่อไปคอมเมนต์สร้างความเข้าใจผิด", type: "bad", desc: "เป็นการสวมรอยและสร้างความเสียหายต่อบุคคลอื่น" },
+                    { text: "บล็อกหรือกดเลิกติดตามบัญชีที่มีพฤติกรรม Toxic", type: "good", desc: "ปกป้องสุขภาพจิตของตนเองจากพลังงานลบออนไลน์" },
+                    { text: "ตระหนักว่าร่องรอยดิจิทัล (Digital Footprint) อยู่คงทนถาวร", type: "good", desc: "เยี่ยมมาก สิ่งที่ทำวันนี้จะส่งผลต่ออนาคตในระยะยาว" }
+                ]
+            },
+            {
+                id: 5,
+                name: "Level 5: Digital Citizen Master",
+                title: "สถานการณ์บูรณาการและภารกิจบอส",
+                badge: "👑 ปรมาจารย์พลเมืองดิจิทัลขั้นสูงสุด",
+                desc: "บททดสอบบูรณาการสถานการณ์ซับซ้อนรอบด้านระดับสูง",
+                questions: [
+                    { text: "แชร์ข้อมูลส่วนตัวของเพื่อนเพื่อแก้แค้นความขัดแย้งส่วนตัว", type: "bad", desc: "ผิดกฎหมาย พ.ร.บ. คอมพิวเตอร์ และละเมิดสิทธิส่วนบุคคลอย่างร้ายแรง" },
+                    { text: "ใช้วิจารณญาณประเมินความเสี่ยงรอบด้านก่อนคลิกหรือแชร์ข้อมูล", type: "good", desc: "คุณสมบัติยอดเยี่ยมของพลเมืองดิจิทัลต้นแบบ" },
+                    { text: "เชื่อใจเพื่อนร่วมกลุ่มออนไลน์ที่เพิ่งรู้จักและโอนเงินให้ยืม", type: "bad", desc: "เสี่ยงถูกแก๊งคอลเซ็นเตอร์หรือมิจฉาชีพออนไลน์หลอกลวง" },
+                    { text: "ตระหนักถึงสิทธิ หน้าที่ และความรับผิดชอบในการใช้สื่อสังคมออนไลน์", type: "good", desc: "หลักการสำคัญของการเป็น Digital Citizen ที่สมบูรณ์" },
+                    { text: "สร้างข่าวลือสนุกๆ เพื่อปั่นกระแสในโลกออนไลน์", type: "bad", desc: "สร้างความเสียหายต่อสังคมและอาจมีความผิดทางกฎหมาย" },
+                    { text: "ร่วมรณรงค์สร้างสรรค์สังคมดิจิทัลเชิงบวก (Digital Well-being)", type: "good", desc: "สุดยอด! เป็นผู้นำการเปลี่ยนแปลงที่ดีสู่สังคม" },
+                    { text: "ละเลยการตั้งค่าความเป็นส่วนตัวเพราะคิดว่าไม่มีใครสนใจ", type: "bad", desc: "เปิดช่องทางให้ผู้ไม่หวังดีเข้าถึงข้อมูลได้ง่าย" },
+                    { text: "ตรวจสอบข้อเท็จจริงและให้ความรู้ที่ถูกต้องแก่คนรอบข้าง", type: "good", desc: "ยอดเยี่ยม ช่วยสร้างภูมิคุ้มกันให้ชุมชนรอบตัว" },
+                    { text: "ดาวน์โหลดโปรแกรมเถื่อน (Crack) ที่ระบุว่าแถมตัวแฮกเกม", type: "bad", desc: "เสี่ยงมัลแวร์เรียกค่าไถ่ (Ransomware) และไวรัสทำลายระบบ" },
+                    { text: "เลือกใช้วัสดุและซอฟต์แวร์ที่ถูกลิขสิทธิ์หรือเปิดเผยซอร์สโค้ด", type: "good", desc: "สนับสนุนนวัตกรรมอย่างมีจริยธรรม" },
+                    { text: "แสดงความเกลียดชัง (Hate Speech) ใต้โพสต์สาธารณะ", type: "bad", desc: "ทำลายบรรยากาศสังคมและละเมิดกฎหมาย" },
+                    { text: "ใช้เทคโนโลยีอย่างสมดุล ไม่เสพติดหน้าจอจนกระทบสุขภาพ", type: "good", desc: "ยอดเยี่ยม รักษาสมดุลชีวิตดิจิทัลและกายภาพ (Digital Balance)" },
+                    { text: "เปิดเผยรหัสผ่านบัญชีอีเมลโรงเรียนให้เพื่อนยืมใช้ส่งงาน", type: "bad", desc: "เสี่ยงต่อความปลอดภัยของระบบสารสนเทศองค์กร" },
+                    { text: "ให้เกียรติความคิดเห็นผู้อื่นและใช้เหตุผลในการสื่อสารออนไลน์", type: "good", desc: "สร้างวัฒนธรรมการสนทนาที่สร้างสรรค์" },
+                    { text: "นัดพบคนแปลกหน้าที่รู้จักกันผ่านเกมออนไลน์โดยลำพัง", type: "bad", desc: "อันตรายต่อความปลอดภัยในชีวิตและร่างกาย" },
+                    { text: "ปรึกษาผู้ปกครองหรือครูทันทีเมื่อพบเจอภัยคุกคามทางไซเบอร์", type: "good", desc: "แนวทางปฏิบัติที่ถูกต้องและปลอดภัยที่สุด" },
+                    { text: "กดลิงก์สุ่มแจกรางวัลสมนาคุณจากแบรนด์ดังที่ไม่มีเครื่องหมายรับรอง", type: "bad", desc: "กับดักฟิชชิงยอดนิยม" },
+                    { text: "เผยแพร่ความรู้เท่าทันสื่อ (Media Literacy) ให้แก่เยาวชนรุ่นน้อง", type: "good", desc: "สุดยอดบทบาทผู้นำพลเมืองดิจิทัล" },
+                    { text: "ปล่อยปละละเลยเมื่อเห็นเพื่อนในโรงเรียนถูกกลั่นแกล้งออนไลน์", type: "bad", desc: "การนิ่งเฉยอาจทำให้การกลั่นแกล้งรุนแรงขึ้น ควรช่วยเหลือหรือแจ้งผู้เกี่ยวข้อง" },
+                    { text: "สร้างสรรค์คอนเทนต์ที่มีคุณค่า เป็นประโยชน์ และปลอดภัยต่อสังคม", type: "good", desc: "ยอดเยี่ยม สมเป็น Digital Citizen Master ตัวจริง!" }
+                ]
+            }
+        ];
+
+        // --- GAME STATE ---
+        let gameState = {
+            currentScreen: 'welcome',
+            mode: 'challenge', // 'challenge' (timed) or 'practice' (untrained/untimed)
+            currentLevelId: 1,
+            score: 0,
+            timer: 60,
+            hearts: 3,
+            combo: 0,
+            maxCombo: 0,
+            correctCount: 0,
+            wrongCount: 0,
+            mistakesList: [],
+            isPaused: false,
+            gameActive: false,
+            unlockedLevels: 1,
+            badges: [false, false, false, false, false]
+        };
+
+        let timerInterval = null;
+        let moleInterval = null;
+        let activeMoles = {}; // holeIndex -> { type, text, desc, timeoutId }
+
+        // Load progress from localStorage
+        function loadProgress() {
+            const saved = localStorage.getItem('digital_citizen_progress');
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    gameState.unlockedLevels = data.unlockedLevels || 1;
+                    gameState.badges = data.badges || [false, false, false, false, false];
+                } catch(e) {
+                    console.error("Failed to load progress", e);
+                }
+            }
+        }
+
+        function saveProgress() {
+            localStorage.setItem('digital_citizen_progress', JSON.stringify({
+                unlockedLevels: gameState.unlockedLevels,
+                badges: gameState.badges
+            }));
+        }
+
+        // --- SCREEN ROUTING ---
+        function showScreen(screenName) {
+            document.getElementById('screen-welcome').classList.add('hidden');
+            document.getElementById('screen-levels').classList.add('hidden');
+            document.getElementById('screen-game').classList.add('hidden');
+            document.getElementById('screen-result').classList.add('hidden');
+            document.getElementById('game-header').classList.add('hidden');
+
+            stopGameLoops();
+
+            gameState.currentScreen = screenName;
+            if (screenName === 'welcome') {
+                document.getElementById('screen-welcome').classList.remove('hidden');
+            } else if (screenName === 'levels') {
+                document.getElementById('screen-levels').classList.remove('hidden');
+                renderLevelList();
+            } else if (screenName === 'game') {
+                document.getElementById('screen-game').classList.remove('hidden');
+                document.getElementById('game-header').classList.remove('hidden');
+            } else if (screenName === 'result') {
+                document.getElementById('screen-result').classList.remove('hidden');
+            }
+        }
+
+        function selectGameMode(mode) {
+            gameState.mode = mode;
+            showScreen('levels');
+        }
+
+        // --- LEVEL SELECTION RENDERING ---
+        function renderLevelList() {
+            loadProgress();
+            const container = document.getElementById('level-list-container');
+            container.innerHTML = '';
+
+            levelData.forEach((lvl, idx) => {
+                const isUnlocked = lvl.id <= gameState.unlockedLevels;
+                const isCompleted = gameState.badges[idx];
+
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-2xl border-2 transition flex flex-col justify-between ${
+                    isUnlocked 
+                        ? 'bg-cyberCard border-cyberNeon/60 hover:border-cyberNeon shadow-neon cursor-pointer' 
+                        : 'bg-cyberCard/40 border-gray-700 opacity-60 cursor-not-allowed'
+                }`;
+                
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-bold px-2 py-0.5 rounded-full ${isUnlocked ? 'bg-cyberNeon/20 text-cyberNeon' : 'bg-gray-700 text-gray-400'}">
+                                ${lvl.name}
+                            </span>
+                            <span>${isCompleted ? '👑 ผ่านแล้ว' : (isUnlocked ? '🔓 เปิดแล้ว' : '🔒 ล็อก')}</span>
+                        </div>
+                        <h3 class="text-base font-bold text-white mb-1">${lvl.title}</h3>
+                        <p class="text-xs text-gray-400 line-clamp-2">${lvl.desc}</p>
+                    </div>
+                    <div class="mt-4 flex items-center justify-between">
+                        <span class="text-xs text-cyberPurple font-semibold">${lvl.badge}</span>
+                        ${isUnlocked ? `<button onclick="startLevel(${lvl.id})" class="bg-cyberNeon text-cyberDark font-bold px-4 py-1.5 rounded-xl text-xs shadow-neon hover:bg-cyan-300 transition">เริ่มด่าน</button>` : `<span class="text-xs text-gray-500">ต้องผ่านด่านก่อนหน้า</span>`}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // --- GAMEPLAY INITIALIZATION & LOOP ---
+        function startLevel(levelId) {
+            gameState.currentLevelId = levelId;
+            gameState.score = 0;
+            gameState.timer = gameState.mode === 'challenge' ? 60 : 999;
+            gameState.hearts = 3;
+            gameState.combo = 0;
+            gameState.maxCombo = 0;
+            gameState.correctCount = 0;
+            gameState.wrongCount = 0;
+            gameState.mistakesList = [];
+            gameState.gameActive = true;
+            gameState.isPaused = false;
+
+            showScreen('game');
+            setupArena();
+            updateHUD();
+
+            // Start Timers
+            if (gameState.mode === 'challenge') {
+                document.getElementById('hud-timer-container').style.display = 'flex';
+                timerInterval = setInterval(() => {
+                    if (!gameState.isPaused && gameState.gameActive) {
+                        gameState.timer--;
+                        updateHUD();
+                        if (gameState.timer <= 0) {
+                            endGame(true);
+                        }
+                    }
+                }, 1000);
+            } else {
+                document.getElementById('hud-timer-container').style.display = 'none';
+            }
+
+            // Start mole popup loop
+            moleInterval = setInterval(() => {
+                if (!gameState.isPaused && gameState.gameActive) {
+                    spawnMole();
+                }
+            }, 1200);
+        }
+
+        function setupArena() {
+            const arena = document.querySelector('#screen-game .grid');
+            arena.innerHTML = '';
+            for (let i = 0; i < 9; i++) {
+                const hole = document.createElement('div');
+                hole.className = 'relative bg-cyberDark/80 rounded-2xl border-2 border-cyberPurple/40 overflow-hidden flex items-end justify-center cursor-pointer shadow-inner';
+                hole.id = `hole-${i}`;
+                hole.onclick = () => handleHoleClick(i);
+                
+                // Hole Graphic Base
+                hole.innerHTML = `
+                    <div class="absolute bottom-2 w-3/4 h-6 bg-black/60 rounded-full border border-cyberPurple/30"></div>
+                    <div id="mole-container-${i}" class="absolute bottom-0 w-full flex flex-col items-center transform translate-y-full transition-transform duration-300 pointer-events-none">
+                        <!-- Mole SVG & Sign -->
+                        <div class="relative flex flex-col items-center">
+                            <!-- Signboard with Scenario Text -->
+                            <div id="sign-${i}" class="bg-cyberDark border-2 border-cyberNeon text-white text-[11px] sm:text-xs font-medium px-3 py-1.5 rounded-xl shadow-neon max-w-[140px] text-center mb-1 z-10 line-clamp-2">
+                                สถานการณ์จำลอง
+                            </div>
+                            <!-- Mole Character SVG -->
+                            <svg class="w-16 h-16 sm:w-20 sm:h-20" viewBox="0 0 100 100">
+                                <ellipse cx="50" cy="55" rx="30" ry="25" fill="#a56a44" id="mole-body-${i}"/>
+                                <!-- Ears -->
+                                <circle cx="28" cy="40" r="8" fill="#a56a44"/>
+                                <circle cx="72" cy="40" r="8" fill="#a56a44"/>
+                                <!-- Eyes & Glasses -->
+                                <circle cx="40" cy="48" r="4" fill="#000"/>
+                                <circle cx="60" cy="48" r="4" fill="#000"/>
+                                <rect x="34" y="43" width="13" height="10" rx="3" fill="none" stroke="#00f0ff" stroke-width="2" id="glass-l-${i}"/>
+                                <rect x="53" y="43" width="13" height="10" rx="3" fill="none" stroke="#00f0ff" stroke-width="2" id="glass-r-${i}"/>
+                                <!-- Snout -->
+                                <ellipse cx="50" cy="56" rx="7" ry="5" fill="#3a2518"/>
+                                <!-- Smile / Expression -->
+                                <path d="M45 65 Q50 70 55 65" stroke="#3a2518" stroke-width="3" fill="none" stroke-linecap="round" id="mole-mouth-${i}"/>
+                            </svg>
+                        </div>
+                    </div>
+                `;
+                arena.appendChild(hole);
+            }
+        }
+
+        // --- MOLE SPAWNING & GAME MECHANICS ---
+        function spawnMole() {
+            // Find empty holes
+            const emptyHoles = [];
+            for (let i = 0; i < 9; i++) {
+                if (!activeMoles[i]) emptyHoles.push(i);
+            }
+            if (emptyHoles.length === 0) return;
+
+            // Pick random hole
+            const randomHole = emptyHoles[Math.floor(Math.random() * emptyHoles.length)];
+
+            // Pick random question from current level
+            const lvl = levelData.find(l => l.id === gameState.currentLevelId);
+            const q = lvl.questions[Math.floor(Math.random() * lvl.questions.length)];
+
+            activeMoles[randomHole] = {
+                type: q.type, // 'bad' or 'good'
+                text: q.text,
+                desc: q.desc,
+                hit: false
+            };
+
+            // Update DOM
+            const sign = document.getElementById(`sign-${randomHole}`);
+            const body = document.getElementById(`mole-body-${randomHole}`);
+            const glassL = document.getElementById(`glass-l-${randomHole}`);
+            const glassR = document.getElementById(`glass-r-${randomHole}`);
+            const container = document.getElementById(`mole-container-${randomHole}`);
+
+            sign.innerText = q.text;
+            if (q.type === 'bad') {
+                body.setAttribute('fill', '#d946ef'); // Pink/Purple for Bad Mole
+                glassL.setAttribute('stroke', '#ff007f');
+                glassR.setAttribute('stroke', '#ff007f');
+            } else {
+                body.setAttribute('fill', '#10b981'); // Green for Good Mole
+                glassL.setAttribute('stroke', '#00ff66');
+                glassR.setAttribute('stroke', '#00ff66');
+            }
+
+            // Pop up animation
+            container.classList.remove('translate-y-full');
+            container.classList.add('translate-y-0');
+
+            // Auto hide after 2.5 seconds if not clicked
+            const hideTimeout = setTimeout(() => {
+                if (activeMoles[randomHole] && !activeMoles[randomHole].hit) {
+                    container.classList.remove('translate-y-0');
+                    container.classList.add('translate-y-full');
+                    // If bad mole escaped in challenge mode, penalty
+                    if (activeMoles[randomHole].type === 'bad' && gameState.mode === 'challenge') {
+                        gameState.combo = 0;
+                    }
+                    delete activeMoles[randomHole];
+                }
+            }, 2500);
+
+            activeMoles[randomHole].timeout = hideTimeout;
+        }
+
+        function handleHoleClick(index) {
+            if (!gameState.gameActive || gameState.isPaused) return;
+            const mole = activeMoles[index];
+            if (!mole || mole.hit) return; // Already hidden or hit
+
+            mole.hit = true;
+            clearTimeout(mole.timeout);
+
+            const container = document.getElementById(`mole-container-${index}`);
+            container.classList.remove('translate-y-0');
+            container.classList.add('translate-y-full');
+
+            if (mole.type === 'bad') {
+                // Correctly hit a Bad Mole!
+                soundEngine.playHitCorrect();
+                gameState.correctCount++;
+                gameState.score += 100;
+                gameState.combo++;
+                if (gameState.combo > gameState.maxCombo) gameState.maxCombo = gameState.combo;
+
+                if (gameState.combo % 3 === 0) {
+                    gameState.score += 100; // Combo bonus
+                    soundEngine.playCombo();
+                    showFloatingText(index, '🔥 COMBO +100!', '#00ff66');
+                } else {
+                    showFloatingText(index, '+100', '#00ff66');
+                }
+            } else {
+                // Wrongly hit a Good Mole!
+                soundEngine.playHitWrong();
+                gameState.wrongCount++;
+                gameState.score = Math.max(0, gameState.score - 50);
+                gameState.combo = 0;
+                gameState.hearts--;
+                gameState.mistakesList.push({ text: mole.text, desc: mole.desc });
+                showFloatingText(index, '❌ ผิด! -50', '#ff007f');
+
+                if (gameState.hearts <= 0 && gameState.mode === 'challenge') {
+                    endGame(false);
+                }
+            }
+
+            delete activeMoles[index];
+            updateHUD();
+        }
+
+        function showFloatingText(holeIndex, text, color) {
+            const hole = document.getElementById(`hole-${holeIndex}`);
+            const floatEl = document.createElement('div');
+            floatEl.className = `absolute z-30 font-extrabold text-sm sm:text-base float-anim pointer-events-none`;
+            floatEl.style.color = color;
+            floatEl.innerText = text;
+            floatEl.style.left = '50%';
+            floatEl.style.top = '40%';
+            floatEl.style.transform = 'translate(-50%, -50%)';
+            hole.appendChild(floatEl);
+            setTimeout(() => floatEl.remove(), 800);
+        }
+
+        function updateHUD() {
+            document.getElementById('hud-score').innerText = gameState.score;
+            document.getElementById('hud-timer').innerText = gameState.timer;
+            document.getElementById('hud-combo').innerText = 'x' + gameState.combo;
+            
+            const heartsContainer = document.getElementById('hud-hearts');
+            let heartsStr = '';
+            for (let i = 0; i < 3; i++) {
+                heartsStr += i < gameState.hearts ? '❤️' : '🤍';
+            }
+            heartsContainer.innerText = heartsStr;
+
+            const lvl = levelData.find(l => l.id === gameState.currentLevelId);
+            document.getElementById('hud-level-name').innerText = lvl.name;
+            document.getElementById('hud-mode-name').innerText = gameState.mode === 'challenge' ? 'โหมดท้าทาย' : 'โหมดฝึกฝน';
+        }
+
+        function stopGameLoops() {
+            if (timerInterval) clearInterval(timerInterval);
+            if (moleInterval) clearInterval(moleInterval);
+            for (let i = 0; i < 9; i++) {
+                if (activeMoles[i] && activeMoles[i].timeout) {
+                    clearTimeout(activeMoles[i].timeout);
+                }
+            }
+            activeMoles = {};
+        }
+
+        function pauseGame() {
+            gameState.isPaused = true;
+            document.getElementById('modal-pause').classList.remove('hidden');
+        }
+
+        function resumeGame() {
+            gameState.isPaused = false;
+            document.getElementById('modal-pause').classList.add('hidden');
+        }
+
+        function quitGame() {
+            stopGameLoops();
+            document.getElementById('modal-pause').classList.add('hidden');
+            showScreen('levels');
+        }
+
+        function restartLevel() {
+            document.getElementById('modal-pause').classList.add('hidden');
+            startLevel(gameState.currentLevelId);
+        }
+
+        function openPauseModal() {
+            pauseGame();
+        }
+
+        // --- END GAME & EVALUATION ---
+        function endGame(isTimeUpOrComplete) {
+            gameState.gameActive = false;
+            stopGameLoops();
+
+            const totalActions = gameState.correctCount + gameState.wrongCount;
+            const accuracy = totalActions > 0 ? Math.round((gameState.correctCount / totalActions) * 100) : (gameState.score > 0 ? 100 : 0);
+            
+            // Pass criteria: accuracy >= 80% or practice mode
+            const passed = accuracy >= 80 || gameState.mode === 'practice';
+
+            showScreen('result');
+
+            const titleEl = document.getElementById('result-title');
+            const subEl = document.getElementById('result-subtitle');
+            const badgeIcon = document.getElementById('result-badge-icon');
+            const nextBtn = document.getElementById('btn-next-level');
+
+            document.getElementById('res-score').innerText = gameState.score;
+            document.getElementById('res-accuracy').innerText = accuracy + '%';
+            document.getElementById('res-correct-count').innerText = `${gameState.correctCount}/${gameState.wrongCount}`;
+
+            // Render mistakes review
+            const mistakeContainer = document.getElementById('mistake-review-container');
+            const mistakeList = document.getElementById('mistake-list');
+            mistakeList.innerHTML = '';
+            if (gameState.mistakesList.length > 0) {
+                mistakeContainer.classList.remove('hidden');
+                gameState.mistakesList.forEach(m => {
+                    const item = document.createElement('div');
+                    item.className = 'border-b border-gray-700 pb-1 mb-1';
+                    item.innerHTML = `<span class="text-cyberPink font-semibold">❌ ${m.text}</span><br/><span class="text-gray-400 text-[11px]">${m.desc}</span>`;
+                    mistakeList.appendChild(item);
+                });
+            } else {
+                mistakeContainer.classList.add('hidden');
+            }
+
+            loadProgress();
+
+            if (passed) {
+                soundEngine.playWin();
+                titleEl.innerText = "ผ่านภารกิจสำเร็จ! 🎉";
+                subEl.innerText = "ยอดเยี่ยมมาก! คุณแสดงทักษะพลเมืองดิจิทัลได้สมบูรณ์แบบ";
+                badgeIcon.innerHTML = "🏆";
+                
+                // Unlock next level & badge
+                gameState.badges[gameState.currentLevelId - 1] = true;
+                if (gameState.currentLevelId < 5 && gameState.currentLevelId >= gameState.unlockedLevels) {
+                    gameState.unlockedLevels = gameState.currentLevelId + 1;
+                }
+                saveProgress();
+
+                if (gameState.currentLevelId < 5) {
+                    nextBtn.classList.remove('hidden');
+                } else {
+                    nextBtn.classList.add('hidden');
+                    subEl.innerText = "สุดยอด! คุณผ่านครบทั้ง 5 ด่าน เป็น Digital Citizen Master อย่างแท้จริง!";
+                }
+            } else {
+                soundEngine.playGameOver();
+                titleEl.innerText = "ยังไม่ผ่านเกณฑ์ ⚠️";
+                subEl.innerText = `ความแม่นยำ ${accuracy}% (ต้องการอย่างน้อย 80% เพื่อผ่านด่าน)`;
+                badgeIcon.innerHTML = "💡";
+                nextBtn.classList.add('hidden');
+            }
+        }
+
+        function proceedNextLevel() {
+            if (gameState.currentLevelId < 5) {
+                startLevel(gameState.currentLevelId + 1);
+            } else {
+                showScreen('levels');
+            }
+        }
+
+        // --- MODALS (How to Play, Badges, Info) ---
+        function openHowToPlay() {
+            document.getElementById('modal-howto').classList.remove('hidden');
+        }
+
+        function openBadgeModal() {
+            loadProgress();
+            const container = document.getElementById('badge-container');
+            container.innerHTML = '';
+
+            levelData.forEach((lvl, idx) => {
+                const acquired = gameState.badges[idx];
+                const item = document.createElement('div');
+                item.className = `p-3 rounded-2xl border flex items-center justify-between ${acquired ? 'bg-cyberCard border-cyberYellow shadow-neon' : 'bg-cyberCard/40 border-gray-700 opacity-50'}`;
+                item.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="text-2xl">${acquired ? '🏆' : '🔒'}</span>
+                        <div>
+                            <h4 class="text-xs font-bold text-white">${lvl.name}</h4>
+                            <p class="text-[11px] text-cyberYellow">${lvl.badge}</p>
+                        </div>
+                    </div>
+                    <span class="text-xs font-semibold ${acquired ? 'text-cyberGreen' : 'text-gray-400'}">${acquired ? 'ได้รับแล้ว' : 'ยังไม่ปลดล็อก'}</span>
+                `;
+                container.appendChild(item);
+            });
+
+            document.getElementById('modal-badge').classList.remove('hidden');
+        }
+
+        function openInfoModal() {
+            openHowToPlay();
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        function toggleSound() {
+            soundEngine.enabled = !soundEngine.enabled;
+            const iconWelcome = document.getElementById('sound-icon-welcome');
+            const iconGame = document.getElementById('sound-icon');
+            
+            if (soundEngine.enabled) {
+                if (iconWelcome) iconWelcome.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.900a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>';
+                if (iconGame) iconGame.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.900a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>';
+            } else {
+                if (iconWelcome) iconWelcome.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"></path>';
+                if (iconGame) iconGame.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"></path>';
+            }
+        }
+
+        // Initialize on load
+        window.onload = function() {
+            loadProgress();
+            showScreen('welcome');
+        };
+    </script>
+</body>
+</html>
